@@ -130,4 +130,4 @@ connection = psycopg.connect(
 # import_clients(connection)
 # import_items(connection)
 # import_pvz(connection)
-import_orders(connection)
+# import_orders(connection)
