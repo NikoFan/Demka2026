@@ -28,7 +28,18 @@ def import_clients(conn):
 
 def import_items(conn):
     query = """
-    insert into Items
+    insert into Items (
+    item_article,
+    item_name,
+    item_edinica,
+    item_cost,
+    item_deliveryman,
+    item_creator,
+    item_category,
+    item_sale,
+    item_count,
+    item_information,
+    item_picture)
     values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
     """
     data_frame = pd.read_excel(
@@ -86,8 +97,8 @@ def import_pvz(conn):
 
 def import_orders(conn):
     query = """
-        insert into Orders
-        values (%s, %s, %s, %s, %s, %s, %s, %s);
+        insert into Orders ()
+        values (%s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
     data_frame = pd.read_excel(
         "/home/neoleg/Documents/Demka3Kurs/Demoexam2026/EXCEL/Заказ_import.xlsx",
@@ -128,6 +139,6 @@ connection = psycopg.connect(
 )
 
 # import_clients(connection)
-# import_items(connection)
+import_items(connection)
 # import_pvz(connection)
 # import_orders(connection)

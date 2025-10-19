@@ -75,6 +75,12 @@ class DatabaseConnection:
             result["user_name"] = answer[1]
             result["user_login"] = answer[2]
             result["user_password"] = answer[3]
+
+        if result == dict():
+            # Если ответ из БД - пустой, значит входил гость
+            print("NO one")
+            result["user_role"] = "Гость"
+            result["user_name"] = "Аккаунт Гостя"
         return result
 
     def get_all_items(self):
@@ -91,25 +97,235 @@ class DatabaseConnection:
         cursor = self.connection.cursor()
         cursor.execute(query)
         for answer in cursor.fetchall():
-            print(answer)
-            picture = answer[10]
+            picture = answer[11]
             if picture == "":
                 picture = "picture.png"
             result.append(
                 # Добавление словаря для каждого товара в список
                 {
-                    "article": answer[0],
-                    "name": answer[1],
-                    "edinica": answer[2],
-                    "cost": answer[3],
-                    "deliveryman": answer[4],
-                    "creator": answer[5],
-                    "category": answer[6],
-                    "sale": answer[7],
-                    "count": answer[8],
-                    "information": answer[9],
+                    "id": answer[0],
+                    "article": answer[1],
+                    "name": answer[2],
+                    "edinica": answer[3],
+                    "cost": answer[4],
+                    "deliveryman": answer[5],
+                    "creator": answer[6],
+                    "category": answer[7],
+                    "sale": answer[8],
+                    "count": answer[9],
+                    "information": answer[10],
                     "picture": picture,
                 }
             )
+        return result
+
+    def search_and_filter_items(self,
+                                search_text: str = "",
+                                company_filter: str = "",
+                                sort_by_count: bool = False):
+        query = """
+            SELECT 
+                item_id, item_article, item_name, item_edinica, item_cost,
+                item_deliveryman, item_creator, item_category,
+                item_sale, item_count, item_information, item_picture
+            FROM Items
+            WHERE 1=1
+        """
+        params = []
+
+        # Поиск по тексту (регистронезависимо в PostgreSQL — ILIKE)
+        if search_text:
+            like_clause = " OR ".join([
+                "item_article ILIKE %s",
+                "item_name ILIKE %s",
+                "item_edinica ILIKE %s",
+                "item_deliveryman ILIKE %s",
+                "item_creator ILIKE %s",
+                "item_category ILIKE %s",
+                "item_information ILIKE %s",
+                "item_picture ILIKE %s"
+            ])
+            query += f" AND ({like_clause})"
+            params.extend([f"%{search_text}%"] * 8)
+
+        # Фильтр по поставщику
+        if company_filter and company_filter != "Все поставщики":
+            query += " AND item_deliveryman = %s"
+            params.append(company_filter)
+
+        # Сортировка
+        if sort_by_count:
+            query += " ORDER BY item_count DESC"  # от большего к меньшему
+        else:
+            query += " ORDER BY item_name"  # по умолчанию — по названию
+
+        cursor = self.connection.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        result = []
+        for answer in rows:
+            picture = answer[11] or "picture.png"
+            result.append({
+                "id": answer[0],
+                "article": answer[1],
+                "name": answer[2],
+                "edinica": answer[3],
+                "cost": answer[4],
+                "deliveryman": answer[5],
+                "creator": answer[6],
+                "category": answer[7],
+                "sale": answer[8],
+                "count": answer[9],
+                "information": answer[10],
+                "picture": picture,
+            })
+        return result
+
+    def take_all_deliveryman(self):
+        """
+        Метод получения всех поставщиков
+        :return: Список поставщиков
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("""
+        SELECT DISTINCT item_deliveryman
+        FROM Items
+        ORDER BY item_deliveryman
+        """)
+
+        result = ["Все поставщики"]
+        for answer in cursor.fetchall():
+            result.append(answer[0])
         print(result)
         return result
+
+    def take_item_single_info(self):
+        """
+        Метод получения информации о конкретном товаре
+        :return: dict()
+        """
+
+        query = f"""
+        select *
+        from Items
+        where item_id = {Storage.get_item_id()}
+        """
+        print(query)
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        result = dict()
+        for answer in cursor.fetchall():
+            result = {
+                "id": answer[0],
+                "article": answer[1],
+                "name": answer[2],
+                "edinica": answer[3],
+                "cost": answer[4],
+                "deliveryman": answer[5],
+                "creator": answer[6],
+                "category": answer[7],
+                "sale": answer[8],
+                "count": answer[9],
+                "information": answer[10],
+                "picture": answer[11]
+            }
+        return result
+
+    def update_card_picture(self, picture_name: str,
+                            user_input_data: list):
+        """
+        Обновление фотографии товара
+        :param picture_name: Новое имя товара
+        :param user_input_data: Данные от ввода пользователя
+        :return: Bool
+        """
+        print(tuple(map(str, user_input_data)))
+        try:
+            query = f"""
+                UPDATE Items
+                SET item_picture = '{picture_name}',
+                item_article = %s,
+                item_name = %s,
+                item_edinica = %s,
+                item_cost = %s,
+                item_deliveryman = %s,
+                item_creator = %s,
+                item_category = %s,
+                item_sale = %s,
+                item_count = %s,
+                item_information = %s
+                WHERE item_id = {Storage.get_item_id()}
+            """
+            cursor = self.connection.cursor()
+            cursor.execute(query, tuple(map(str, user_input_data)))
+            self.connection.commit()
+
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
+    def create_new_card(self,
+                        user_input: list,
+                        picture_name: str):
+        """
+        Метод создания нового товара
+        :param user_input: Ввод пользователя
+        :param picture_name: Название для фото
+        :return: bool
+        """
+        try:
+            query = f"""
+            insert into Items (
+            item_article,
+            item_name,
+            item_edinica,
+            item_cost,
+            item_deliveryman,
+            item_creator,
+            item_category,
+            item_sale,
+            item_count,
+            item_information,
+            item_picture)
+            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, '{picture_name}')
+            """
+            cursor = self.connection.cursor()
+            cursor.execute(query, tuple(map(str, user_input)))
+            self.connection.commit()
+            return True
+        except Exception as e:
+            print("Error:", e)
+            return False
+
+    def delete_item(self,
+                    item_article: str):
+        """
+        Метод для удаления товара из таблицы
+        :return: bool
+        """
+
+        # Проверка, что товара нет в заказах
+        cursor = self.connection.cursor()
+        cursor.execute(f"""
+        SELECT *
+        FROM Orders
+        WHERE order_article LIKE '{item_article}, %'
+           OR order_article LIKE '%, {item_article}, %';
+        """)
+        if len(cursor.fetchall()) != 0:
+            cursor.close()
+            return False
+
+        cursor.close()
+        cursor = self.connection.cursor()
+        cursor.execute(f"""
+                delete 
+                FROM Items
+                WHERE item_id = {Storage.get_item_id()}
+                """)
+        self.connection.commit()
+        return True
+
+

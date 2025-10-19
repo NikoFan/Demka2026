@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QFrame, QPushButton, QHBoxLayout,
 
 from Messages import *
 from FRAMES import HomePageWindow
-
+from StaticStorage import Storage
 
 class LogInFrame(QFrame):
     def __init__(self, controller):
@@ -66,6 +66,9 @@ class LogInFrame(QFrame):
     def guest_enter(self):
         """ Обработчик нажатия на кнопку guest_button """
         print(f"GUEST")
+        # Установка роли - Гость
+        Storage.set_user_role("Гость")
+        self.controller.switch_window(HomePageWindow.HomeFrame)
 
     def edit_text_pattern(self, placeholder_text: str, label_text: str) -> QLineEdit:
         """

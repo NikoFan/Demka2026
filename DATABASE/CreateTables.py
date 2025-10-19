@@ -19,9 +19,11 @@ user_password text not null
 )
 """
 
+# Да, тут ID выделен отдельно, так надо по Заданию
 create_table_ITEMS = """
 create table Items(
-item_article text primary key not null,
+item_id serial primary key not null,
+item_article text not null,
 item_name text not null,
 item_edinica text not null,
 item_cost int not null,
@@ -76,22 +78,22 @@ connection = psycopg.connect(
     host=host_address,
     dbname=database_name
 )
-create_table(
-    query=create_table_USER,
-    conn=connection
-)
+# create_table(
+#     query=create_table_USER,
+#     conn=connection
+# )
 
 create_table(
     query=create_table_ITEMS,
     conn=connection
 )
 
-create_table(
-    query=create_table_PVZ,
-    conn=connection
-)
-
-create_table(
-    query=create_table_ORDERS,
-    conn=connection
-)
+# create_table(
+#     query=create_table_PVZ,
+#     conn=connection
+# )
+#
+# create_table(
+#     query=create_table_ORDERS,
+#     conn=connection
+# )

@@ -2,6 +2,29 @@ class Storage:
     user_login_pk: str = None
     user_role: str = None
 
+    # Список действий для каждой роли
+    roles_actions = {
+        # Администратору еще добавится блок с действиями над товарами
+        "Администратор": ["Поиск", "Сортировка", "Фильтрация"],
+        "Менеджер": ["Поиск", "Сортировка", "Фильтрация"],
+        "Авторизированный клиент": [],  # Он только просматривает, как и гость
+        "Гость": []
+    }
+
+    # id товара, с которым идет работа (Редактирование)
+    current_item_id: str = None
+
+    @staticmethod
+    def set_item_id(new_id):
+        Storage.current_item_id = new_id
+
+    @staticmethod
+    def get_item_id(): return Storage.current_item_id
+
+    @staticmethod
+    def get_roles_action():
+        return Storage.roles_actions[Storage.user_role]
+
     @staticmethod
     def set_user_login(new_login: str):
         """

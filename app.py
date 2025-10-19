@@ -16,7 +16,7 @@ class MainApplicationClass(QMainWindow):
         self.setWindowTitle("Обувь")
 
         # Установка размеров окна
-        self.setMinimumSize(600, 600)
+        self.setMinimumSize(600, 800)
 
         # Создание подключения к базе данных
         self.db = Database.DatabaseConnection()
@@ -43,6 +43,8 @@ class MainApplicationClass(QMainWindow):
         self.frame_container.removeWidget(frame)
         self.frame_container.addWidget(frame)
         self.frame_container.setCurrentWidget(frame)
+
+
 
 
 application = QApplication(sys.argv)

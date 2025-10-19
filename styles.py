@@ -78,4 +78,44 @@ qproperty-alignment: AlignCenter;
 font-size: 20px;
 }
 
+
+#search_edit {
+font-size: 20px;
+padding: 10px;
+color: black;
+border: 1px solid black;
+background: white;
+}
+
+#search_button {
+font-size: 20px;
+border: none;
+background: #00FA9A;
+}
+
+#search_button::hover {
+font-size: 20px;
+border: 1px solid black;
+background: #00FA9A;
+}
+
+#item_card {
+border: 1px solid black;
+}
+
+#update_button{
+border: none;
+}
+
+#UpdateTextEdit {
+font-size: 20px;
+}
+
+#UpdateTextHint {
+font-size: 20px;
+padding-left: 10px;
+}
 """
+
+# text-decoration: underline;
+# ("text-decoration: line-through;")
