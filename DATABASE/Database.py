@@ -305,21 +305,26 @@ class DatabaseConnection:
         Метод для удаления товара из таблицы
         :return: bool
         """
-
         # Проверка, что товара нет в заказах
         cursor = self.connection.cursor()
+        # Этот код немного неверен
+        # Проблема в том, что order_article не является FK
+        # это приводит к тому, что при замене в Items
+        # Он не будет меняться в Orders
         cursor.execute(f"""
         SELECT *
         FROM Orders
         WHERE order_article LIKE '{item_article}, %'
            OR order_article LIKE '%, {item_article}, %';
         """)
+        # Если в ответе от бд есть хоть 1 элемент - отклонение запроса
         if len(cursor.fetchall()) != 0:
             cursor.close()
             return False
-
+        # Если ответ пуст - заказов нет
         cursor.close()
         cursor = self.connection.cursor()
+        # Запуск удаления элемента
         cursor.execute(f"""
                 delete 
                 FROM Items
@@ -329,3 +334,86 @@ class DatabaseConnection:
         return True
 
 
+    def take_all_text_data_for_combo_box(self,
+                                         type_of_data: str):
+        """
+        Метод для получения списка строк для Выпадающего списка
+        :param type_of_data: Наименование колонки для получения данных
+        :return: list()
+        """
+        # По умолчанию - выбираем все колонки
+        # Но 100% будет 1 из вариантов Условного Опператора
+        column_name = "*"
+        if type_of_data == "category":
+           column_name = "item_category"
+        elif type_of_data == "deliveryman":
+            column_name = "item_deliveryman"
+
+        query = f"""
+        select DISTINCT {column_name}
+        from Items
+        order by {column_name}
+        """
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+
+        result = []
+
+        # Да, можно перебрать через fetchone(), который
+        # сразу вернет кортеж элементов
+        # однако исправление подобных моментов будет на стадии доработки
+        for answer in cursor.fetchall():
+            result.append(answer[0])
+
+        return result
+
+    def take_all_orders_rows(self):
+        """
+        Метод получения списка товаров из Таблицы Orders
+        :return: [dict()]
+        """
+        query = """
+        select *
+        from Orders;
+        """
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+
+        result = []
+        for answer in cursor.fetchall():
+            result.append(
+                {
+                    "id": answer[0],
+                    "article": answer[1],
+                    "create_date": answer[2],
+                    "delivery_date": answer[3],
+                    "pvz": answer[4],
+                    "client_name": answer[5],
+                    "code": answer[6],
+                    "status": answer[7],
+
+                }
+            )
+        cursor.close()
+        return result
+
+    def take_pvz_address(self,
+                         pvz_id):
+        """
+        Метод получения адреса ПВЗ для закааз
+        :param pvz_id: id ПВЗ из заказа
+        :return: string
+        """
+        cursor = self.connection.cursor()
+
+        cursor.execute(
+            f"""
+            select pvz_address
+            from PVZ
+            where pvz_id = {pvz_id}
+            """
+        )
+
+        return str(cursor.fetchall()[0])

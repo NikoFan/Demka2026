@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (QFrame, QPushButton, QHBoxLayout, QLineEdit, QChe
 from PySide6.QtGui import QPixmap, QPalette  # Для фоток
 
 from Messages import *
-from FRAMES import LogInWindow, UpdateCardWindow, CreateCardWindow
+from FRAMES import (LogInWindow, UpdateCardWindow,
+                    CreateCardWindow, OrdersCardsWindow)
 from StaticStorage import Storage
 
 from PySide6.QtCore import QTimer
@@ -127,6 +128,15 @@ class HomeFrame(QFrame):
                     self.create_sort_block()
                 case ("Фильтрация"):
                     self.create_filter_block()
+                case ("Заказы"):
+                    orders_button = QPushButton("Заказы")
+                    orders_button.setObjectName("button")
+                    orders_button.clicked.connect(
+                        lambda: self.controller.switch_window(
+                            OrdersCardsWindow.OrdersCardsFrame
+                        )
+                    )
+                    self.frame_layout.addWidget(orders_button)
                 case _:  # Аналог default
                     continue
 
@@ -141,7 +151,7 @@ class HomeFrame(QFrame):
         self.update_items_display(self.database.get_all_items())  # Изначально пусто
         self.frame_layout.addWidget(self.scroll_area)
 
-        create_card_btn = QPushButton("Создать товар")
+        create_card_btn = QPushButton("Добавить товар")
         create_card_btn.setObjectName("button")
         create_card_btn.clicked.connect(
             lambda: self.controller.switch_window(CreateCardWindow.CreateCardFrame)

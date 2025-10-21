@@ -104,7 +104,7 @@ border: 1px solid black;
 }
 
 #update_button{
-border: none;
+border: 1px solid black;
 }
 
 #UpdateTextEdit {

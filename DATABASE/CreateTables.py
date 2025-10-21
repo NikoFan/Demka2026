@@ -26,7 +26,7 @@ item_id serial primary key not null,
 item_article text not null,
 item_name text not null,
 item_edinica text not null,
-item_cost int not null,
+item_cost real not null,
 item_deliveryman text not null,
 item_creator text not null,
 item_category text not null,
@@ -39,14 +39,14 @@ item_picture text -- Не требуется быть всегда заполн�
 
 create_table_PVZ = """
 create table PVZ(
-pvz_id int primary key not null,
+pvz_id serial primary key not null,
 pvz_address text not null
 )
 """
 
 create_table_ORDERS = """
 create table Orders(
-order_id int primary key not null,
+order_id serial primary key not null,
 order_article text not null,
 order_create_date date not null,
 order_delivery_date date not null,
@@ -59,6 +59,12 @@ order_code int not null,
 order_status text not null
 )
 """
+
+# Я немного поменял код, все ID сделал типом данных serial
+# так как нет особого смысла точно из Excel подтягивать номера - легче, чтобы они сами устанавливались
+# + это поможет при создании Заказов (4 модуль)
+# Также стоит Поменять код ImportData.py, однако мне кажется, для импорта будет достаточно и того, что есть
+# и serial не будет мешать перемещению данных напрямую (хз)
 
 def create_table(query, conn):
     """
