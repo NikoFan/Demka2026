@@ -14,12 +14,22 @@ class Storage:
     # id товара, с которым идет работа (Редактирование)
     current_item_id: str = None
 
+    # Id выбранного для редактирования заказа
+    current_order_id: str = None
+
     @staticmethod
     def set_item_id(new_id):
         Storage.current_item_id = new_id
 
     @staticmethod
     def get_item_id(): return Storage.current_item_id
+
+    @staticmethod
+    def set_order_id(new_id):
+        Storage.current_order_id = new_id
+
+    @staticmethod
+    def get_order_id(): return Storage.current_order_id
 
     @staticmethod
     def get_roles_action():

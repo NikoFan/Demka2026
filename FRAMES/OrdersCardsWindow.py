@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QFrame, QPushButton, QHBoxLayout, QLineEdit, QChe
                                QComboBox, QWidget, QVBoxLayout, QLabel, QScrollArea)
 
 from Messages import *
-from FRAMES import HomePageWindow
+from FRAMES import HomePageWindow, UpdateOrderWindow
 from StaticStorage import Storage
 
 
@@ -62,7 +62,7 @@ class OrdersCardsFrame(QFrame):
         self.scroll_area.setWidgetResizable(True)
         print(self.database.take_all_orders_rows())
         self.scroll_area.setWidget(
-            self.create_items_cards_from_list(self.database.take_all_orders_rows()))  # Изначально пусто
+            self.create_orders_cards_from_list(self.database.take_all_orders_rows()))  # Изначально пусто
         self.frame_layout.addWidget(self.scroll_area)
 
         create_card_btn = QPushButton("Добавить заказ")
@@ -72,7 +72,7 @@ class OrdersCardsFrame(QFrame):
         )
         self.frame_layout.addWidget(create_card_btn)
 
-    def create_items_cards_from_list(self, items_list):
+    def create_orders_cards_from_list(self, items_list):
         """Создаёт виджет с карточками из переданного списка"""
         cards_container = QWidget()
         cards_container_layout = QVBoxLayout(cards_container)
@@ -91,7 +91,7 @@ class OrdersCardsFrame(QFrame):
 
             # Даем кнопке имя в виде ID, который является PK в таблице
             update_button.setAccessibleName(str(item["id"]))
-            update_button.clicked.connect(self.go_to_update_window)
+            update_button.clicked.connect(self.go_to_order_update_window)
 
             # Разметка для размещения строчек текста
             information_vbox = QVBoxLayout(update_button)
@@ -110,20 +110,41 @@ class OrdersCardsFrame(QFrame):
             information_vbox.addWidget(
                 QLabel(f"Дата заказа: {item['create_date']}", objectName="cardText", wordWrap=True))
 
+
             order_card_hbox.addWidget(update_button)
+            # Вызов функции создания блока со СТАТУСОМ ЗАКАЗА
+            order_card_hbox.addWidget(self.create_order_status_block(order_status=item["status"]))
 
             cards_container_layout.addWidget(order_card)
 
         return cards_container
 
-    def go_to_update_window(self):
+    def go_to_order_update_window(self):
         """
-        Обработка нажатия на кнопку для переходя в окно редактирования
+        Обработка нажатия на кнопку для переходя в окно редактирования Заказа
         :return: Ничего
         """
-        # Если пользователь - Администратор
         if Storage.get_user_role() == "Администратор":
-            ...
+            sender_name = self.sender().accessibleName()
+            print("Переход в окно предактирования заказа:", sender_name)
+            Storage.set_order_id(sender_name)
+            self.controller.switch_window(UpdateOrderWindow.UpdateOrderFrame)
+
+    def create_order_status_block(self,
+                                  order_status: str) -> QWidget:
+        """
+        Метод создания блока со статусом заказа
+        :param order_status: текстовое значение статуса
+        :return: QWidget
+        """
+        widget = QWidget()
+        widget.setFixedSize(150, 150)
+        widget.setObjectName("order_status_widget")
+        widget_vbox = QVBoxLayout(widget)
+
+        widget_vbox.addWidget(QLabel(order_status, objectName="order_status"))
+
+        return widget
 
     def go_back_to_home_page_window(self):
         """ Обработчик нажатий на кнопку возврата на главное окно """

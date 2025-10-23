@@ -100,7 +100,7 @@ background: #00FA9A;
 }
 
 #item_card {
-border: 1px solid black;
+border: 3px solid black;
 }
 
 #update_button{
@@ -114,6 +114,15 @@ font-size: 20px;
 #UpdateTextHint {
 font-size: 20px;
 padding-left: 10px;
+}
+
+#order_status {
+font-size: 15px;
+qproperty-alignment: AlignCenter;
+}
+
+#order_status_widget {
+border: 3px solid black;
 }
 """
 

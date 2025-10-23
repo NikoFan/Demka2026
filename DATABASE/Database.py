@@ -333,7 +333,6 @@ class DatabaseConnection:
         self.connection.commit()
         return True
 
-
     def take_all_text_data_for_combo_box(self,
                                          type_of_data: str):
         """
@@ -345,7 +344,7 @@ class DatabaseConnection:
         # Но 100% будет 1 из вариантов Условного Опператора
         column_name = "*"
         if type_of_data == "category":
-           column_name = "item_category"
+            column_name = "item_category"
         elif type_of_data == "deliveryman":
             column_name = "item_deliveryman"
 
@@ -399,15 +398,51 @@ class DatabaseConnection:
         cursor.close()
         return result
 
+    def take_single_order_data(self):
+        """
+        Метод получения данных о конкретном товаре
+        :param order_id: ID просматриваемого товара
+        :return: dict()
+        """
+        print(f"""
+           select *
+           from Orders
+           where order_id = {Storage.get_order_id()};
+           """)
+        query = f"""
+           select *
+           from Orders
+           where order_id = {Storage.get_order_id()};
+           """
+
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+
+        result = []
+        for answer in cursor.fetchall():
+            result = {
+                "id": answer[0],
+                "article": answer[1],
+                "create_date": answer[2],
+                "delivery_date": answer[3],
+                "pvz": answer[4],
+                "client_name": answer[5],
+                "code": answer[6],
+                "status": answer[7],
+
+            }
+
+        cursor.close()
+        return result
+
     def take_pvz_address(self,
                          pvz_id):
         """
-        Метод получения адреса ПВЗ для закааз
+        Метод получения адреса ПВЗ для заказа
         :param pvz_id: id ПВЗ из заказа
         :return: string
         """
         cursor = self.connection.cursor()
-
         cursor.execute(
             f"""
             select pvz_address
@@ -417,3 +452,35 @@ class DatabaseConnection:
         )
 
         return str(cursor.fetchall()[0])
+
+    def take_all_pvz_addresses(self):
+        """
+        Метод получения всех ПВЗ для редактирования / создания нового заказа
+        :return: list("1 | Старокачаловская д3к1")
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("""
+        select *
+        from PVZ
+        """)
+
+        result = []
+        for answer in cursor.fetchall():
+            result.append(f"{answer[0]} | {answer[1]}")
+
+        cursor.close()
+        return result
+
+    def take_all_statuses(self):
+        """
+        Метод получения всех вариантов статуса заказа
+        :return: list()
+        """
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            select DISTINCT order_status
+            from Orders;
+            """
+        )
+        return [i[0] for i in cursor.fetchall()]
